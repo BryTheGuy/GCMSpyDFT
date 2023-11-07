@@ -1,7 +1,11 @@
 from enum import Enum
 
 
+@DeprecationWarning
 class Settings(Enum):
+    # Environment Variables #
+    INPUT_FILE: str
+    LEADING_WHITE: int
     # File Naming #
     OUTPUT_DIR: str
     BASE_NAME: str
