@@ -41,10 +41,10 @@ parser.add_argument('-b',
                     help="Basis set to use for all input files.")
 
 parser.add_argument('-T',
-                    '--calc_type',
-                    default='opt',
+                    '--type',
+                    choices=["SP", "Opt", "Freq"],
+                    default='Opt',
                     nargs='*',
-                    type=str,
                     help="Calculation type to preform. eg. 'SP' = 'Single point'")
 
 parser.add_argument('--charge',
