@@ -3,46 +3,59 @@ import argparse
 parser = argparse.ArgumentParser(
     description="Program to convert an output of a GCMS run into \n"
                 "computational chemistry input files.")
+
 parser.add_argument('filename',
-                    type=str)
+                    type=str,
+                    help="Input file name.")
 
 parser.add_argument('-o',
                     '--output',
-                    type=str)
+                    type=str,
+                    help="Output directory.")
 
 parser.add_argument()
 
 parser.add_argument('-c',
                     '--cores',
-                    type=int)
+                    type=int,
+                    help="Number of cpu cores.")
 
 parser.add_argument('-m',
                     '--memory',
-                    type=int)
+                    type=int,
+                    help="Maximum allowed memory.")
 
 parser.add_argument('-C',
                     '--checkpoint',
-                    action='store_true')
+                    action='store_true',
+                    help="Create checkpoint.")
 
 parser.add_argument('-t',
-                    '--theory')
+                    '--theory',
+                    type=str,
+                    help="Functional method to use for all input files.")
 
 parser.add_argument('-b',
-                    '--basis_set',
-                    type=str)
+                    '--basis',
+                    type=str,
+                    help="Basis set to use for all input files.")
 
 parser.add_argument('-T',
                     '--calc_type',
                     default='opt',
                     nargs='*',
-                    type=str)
+                    type=str,
+                    help="Calculation type to preform. eg. 'SP' = 'Single point'")
 
 parser.add_argument('--charge',
-                    type=int)
+                    type=int,
+                    help="Total Charge to assign each molecules. Overrides predicted charge.")
 
 parser.add_argument('--spin',
-                    type=int)
+                    type=int,
+                    help="Multiplicity spin to assign each molecule. Overrides predicted spin.")
 
 parser.add_argument('-M',
                     '--modred',
-                    type=str)
+                    type=str,
+                    help="Modify redundant internal coordinate definitions to include at the end of each input file")
