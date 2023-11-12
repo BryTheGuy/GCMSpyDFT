@@ -73,4 +73,25 @@ parser.add_argument('-M',
                     nargs='*',
                     help="Modify redundant internal coordinate definitions to include at the end of each input file")
 
+args = parser.parse_args()
 
+if args.output:
+    config_file.output = args.output
+elif args.cores:
+    config_file.cores = args.cores
+elif args.memory:
+    config_file.memory = args.memory
+elif args.checkpoint:
+    config_file.memory = args.checkpoint
+elif args.theory:
+    config_file.theory = args.theory
+elif args.basis:
+    config_file.basis = args.basis
+elif args.type:
+    config_file.calc_type = args.type
+elif args.charge:
+    config_file.charge = args.charge
+elif args.spin:
+    config_file.spin = args.spin
+elif args.modred:
+    config_file.modred = args.modred
