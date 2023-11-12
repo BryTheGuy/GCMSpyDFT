@@ -1,61 +1,76 @@
 import argparse
+import config
+import os
+
+
+config_file = config.Config()
 
 parser = argparse.ArgumentParser(
-    description="Program to convert an output of a GCMS run into \n"
+    description="Program to convert an output of a GC-MS run into \n"
                 "computational chemistry input files.")
 
-parser.add_argument('filename',
+parser.add_argument('input_file',
                     type=str,
                     help="Input file name.")
 
 parser.add_argument('-o',
                     '--output',
                     type=str,
+                    default=config_file.output,
                     help="Output directory.")
-
-parser.add_argument()
 
 parser.add_argument('-c',
                     '--cores',
                     type=int,
+                    default=config_file.cores,
                     help="Number of cpu cores.")
 
 parser.add_argument('-m',
                     '--memory',
                     type=int,
+                    default=config_file.memory,
                     help="Maximum allowed memory.")
 
 parser.add_argument('-C',
                     '--checkpoint',
                     action='store_true',
+                    default=config_file.checkpoint,
                     help="Create checkpoint.")
 
 parser.add_argument('-t',
                     '--theory',
                     type=str,
+                    default=config_file.theory,
                     help="Functional method to use for all input files.")
 
 parser.add_argument('-b',
                     '--basis',
                     type=str,
+                    default=config_file.basis,
                     help="Basis set to use for all input files.")
 
 parser.add_argument('-T',
                     '--type',
                     choices=["SP", "Opt", "Freq"],
-                    default='Opt',
+                    default=config_file.calc_type,
                     nargs='*',
                     help="Calculation type to preform. eg. 'SP' = 'Single point'")
 
 parser.add_argument('--charge',
                     type=int,
+                    default=config_file.charge,
                     help="Total Charge to assign each molecules. Overrides predicted charge.")
 
 parser.add_argument('--spin',
                     type=int,
+                    default=config_file.spin,
                     help="Multiplicity spin to assign each molecule. Overrides predicted spin.")
 
 parser.add_argument('-M',
                     '--modred',
                     type=str,
+                    default=config_file.modred,
+                    nargs='*',
                     help="Modify redundant internal coordinate definitions to include at the end of each input file")
+
+
