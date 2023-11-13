@@ -3,9 +3,6 @@ import pathlib
 import sys
 
 import config
-import os
-
-
 config_file = config.Config()
 
 parser = argparse.ArgumentParser(
@@ -90,7 +87,7 @@ parser.add_argument('-M',
 
 args = parser.parse_args()
 
-verbose_print = print if args.verbose else lambda *a, **k: None
+verbose_print = print if args.Verbose else lambda *a, **k: None
 
 if args.output:
     config_file.output = args.output
