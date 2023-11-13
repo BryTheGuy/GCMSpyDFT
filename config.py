@@ -16,6 +16,13 @@ class Config:
 
         self.filename = str
         self.output = pathlib.Path
+
+        self.opsin_format = str
+        self.acid = bool
+        self.radicals = bool
+        self.bad_stereo = bool
+        self.wildcard_radicals = bool
+
         self.cores = int
         self.memory = int
         self.checkpoint = bool
@@ -47,9 +54,16 @@ class Config:
             "Input File": './input.txt',
             "Output Dir": './output/',
         }
+        config['OPSIN'] = {
+            "Output Format": 'SMILES',
+            "Allow Acid": 'Yes',
+            "Allow Radicals": 'Yes',
+            "Allow Bad Stereo": 'No',
+            "Wildcard Radicals": 'No'
+        }
         config['File'] = {
             "Cores": '28',
-            "Memory": '50GB',
+            "Memory": '50',
             "Checkpoint": 'Yes',
             "Old Checkpoint": 'No',
         }
@@ -69,9 +83,15 @@ class Config:
     def read_config(self):
         config = configparser.ConfigParser()
         config.read(self.config_path)
-
+        # all variables to read from file into config class
         self.filename = config['Environment']['input file']
         self.output = config['Environment']['output dir']
+
+        self.opsin_format = config['OPSIN']['output format']
+        self.acid = config['OPSIN']['allow acid']
+        self.radicals = config['OPSIN']['allow radicals']
+        self.bad_stereo = config['OPSIN']['allow bad stereo']
+        self.wildcard_radicals = config['OPSIN']['wildcard radicals']
 
         self.cores = config['File']['cores']
         self.memory = config['File']['memory']
