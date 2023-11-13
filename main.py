@@ -1,4 +1,7 @@
 import argparse
+import pathlib
+import sys
+
 import config
 import os
 
@@ -6,16 +9,28 @@ import os
 config_file = config.Config()
 
 parser = argparse.ArgumentParser(
+    prog="DFT_GC-MS",
     description="Program to convert an output of a GC-MS run into \n"
                 "computational chemistry input files.")
 
-parser.add_argument('input_file',
-                    type=str,
+parser.add_argument('infile',
+                    nargs='?',
+                    type=argparse.FileType('r'),
+                    default=sys.stdin,
                     help="Input file name.")
+
+parser.add_argument('-v',
+                    '--version',
+                    action='version',
+                    version='%(prog)s v0.1')
+
+parser.add_argument('-V',
+                    '--Verbose',
+                    action='store_true')
 
 parser.add_argument('-o',
                     '--output',
-                    type=str,
+                    type=pathlib.Path,
                     default=config_file.output,
                     help="Output directory.")
 
@@ -74,6 +89,8 @@ parser.add_argument('-M',
                     help="Modify redundant internal coordinate definitions to include at the end of each input file")
 
 args = parser.parse_args()
+
+verbose_print = print if args.verbose else lambda *a, **k: None
 
 if args.output:
     config_file.output = args.output
