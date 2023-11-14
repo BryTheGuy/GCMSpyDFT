@@ -12,8 +12,6 @@ class Molecule:
     smiles: str
     cml: str
     mol: pybel.Molecule
-    charge: int
-    spin: int
 
     def name_strip(self):
         self.name_no_space = self.name.strip().replace(' ', '_')
@@ -43,3 +41,21 @@ class Molecule:
             allow_bad_stereo=config_file.bad_stereo(),
             wildcard_radicals=config_file.wildcard_radicals())
 
+    def create_mol(self):
+        if not self.cml:
+            self.name_to_cml()
+        self.mol = pybel.readstring('cml', self.cml)
+
+    def fill_out_mol(self):
+        self.mol.addh()
+        self.mol.make3D()
+        self.mol.OBMol.Center()
+
+    def change_charge(self, change_by):
+        self.mol.OBMol.SetTotalCharge(self.mol.charge + change_by)
+
+    def change_spin(self, change_by):
+        self.mol.OBMol.SetTotalSpinMultiplicity(self.mol.spin + change_by)
+
+    def mol_write(self, out_format, path):
+        self.mol.write(out_format, path)
