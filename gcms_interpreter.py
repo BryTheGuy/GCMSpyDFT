@@ -1,3 +1,6 @@
+from pprint import pprint
+
+
 def read_to_list(input_file: str) -> list:
     """  Reads a file to a list and returns the list.  """
     lines: list
@@ -21,7 +24,7 @@ def trim_header(lines: list, sep_index: int) -> list:
     return lines[sep_index + 1:]
 
 
-def is_peak_line(line: str) -> bool:    # TODO: Make more robust
+def is_peak_line(line: str) -> bool:  # TODO: Make more robust
     """  Checks if second char is a digit and returns the bool.  """
     if len(line) > 2:
         return line[2].isdigit()
@@ -38,20 +41,21 @@ def peak_blocker(lines: list) -> list[str]:
     """
     while lines:
         current_line = lines.pop(0)
-        if is_peak_line(current_line):
+        if is_peak_line(current_line):  # *Should* be always true
             peak = []
-            while True:
+            while len(lines):
                 peak.append(current_line)
                 current_line = lines.pop(0)
                 if not is_peak_line(current_line):
                     continue
                 else:
+                    lines.insert(0, current_line)
                     break
             return peak
     return []
 
 
-def peak_agg(lines: list) -> list[list]:  # TODO: Might switch to a recursive
+def peak_agg(lines: list) -> list[list[str]]:  # TODO: Might switch to a recursive
     """
     Collects peak blocks into a list.
 
@@ -59,6 +63,15 @@ def peak_agg(lines: list) -> list[list]:  # TODO: Might switch to a recursive
     :return: List of peak block lists.
     """
     blocks = []
-    while len(lines):
+    while lines:
         blocks.append(peak_blocker(lines))
     return blocks
+
+
+if __name__ == '__main__':
+    read_lines = read_to_list("hendon_fresh_1.txt")
+    trimmed_lines = trim_header(read_lines, content_finder(read_lines))
+    # peak_blocks = peak_blocker(trimmed_lines)
+    peak_blocks = peak_agg(trimmed_lines)
+
+    pprint(peak_blocks)
