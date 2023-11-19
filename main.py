@@ -2,8 +2,7 @@ import argparse
 import pathlib
 import sys
 
-import config
-config_file = config.Config()
+from config import cgf
 
 parser = argparse.ArgumentParser(
     prog="DFT_GC-MS",
@@ -28,60 +27,50 @@ parser.add_argument('-V',
 parser.add_argument('-o',
                     '--output',
                     type=pathlib.Path,
-                    default=config_file.output,
                     help="Output directory.")
 
 parser.add_argument('-c',
                     '--cores',
                     type=int,
-                    default=config_file.cores,
                     help="Number of cpu cores.")
 
 parser.add_argument('-m',
                     '--memory',
                     type=int,
-                    default=config_file.memory,
                     help="Maximum allowed memory.")
 
 parser.add_argument('-C',
                     '--checkpoint',
                     action='store_true',
-                    default=config_file.checkpoint,
                     help="Create checkpoint.")
 
 parser.add_argument('-t',
                     '--theory',
                     type=str,
-                    default=config_file.theory,
                     help="Functional method to use for all input files.")
 
 parser.add_argument('-b',
                     '--basis',
                     type=str,
-                    default=config_file.basis,
                     help="Basis set to use for all input files.")
 
 parser.add_argument('-T',
                     '--type',
                     choices=["SP", "Opt", "Freq"],
-                    default=config_file.calc_type,
                     nargs='*',
                     help="Calculation type to preform. eg. 'SP' = 'Single point'")
 
 parser.add_argument('--charge',
                     type=int,
-                    default=config_file.charge,
                     help="Total Charge to assign each molecules. Overrides predicted charge.")
 
 parser.add_argument('--spin',
                     type=int,
-                    default=config_file.spin,
                     help="Multiplicity spin to assign each molecule. Overrides predicted spin.")
 
 parser.add_argument('-M',
                     '--modred',
                     type=str,
-                    default=config_file.modred,
                     nargs='*',
                     help="Modify redundant internal coordinate definitions to include at the end of each input file")
 
@@ -90,22 +79,22 @@ args = parser.parse_args()
 verbose_print = print if args.Verbose else lambda *a, **k: None
 
 if args.output:
-    config_file.output = args.output
+    cgf.output = args.output
 elif args.cores:
-    config_file.cores = args.cores
+    cgf.cores = args.cores
 elif args.memory:
-    config_file.memory = args.memory
+    cgf.memory = args.memory
 elif args.checkpoint:
-    config_file.memory = args.checkpoint
+    cgf.memory = args.checkpoint
 elif args.theory:
-    config_file.theory = args.theory
+    cgf.theory = args.theory
 elif args.basis:
-    config_file.basis = args.basis
+    cgf.basis = args.basis
 elif args.type:
-    config_file.calc_type = args.type
+    cgf.calc_type = args.type
 elif args.charge:
-    config_file.charge = args.charge
+    cgf.charge = args.charge
 elif args.spin:
-    config_file.spin = args.spin
+    cgf.spin = args.spin
 elif args.modred:
-    config_file.modred = args.modred
+    cgf.modred = args.modred
