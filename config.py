@@ -109,9 +109,7 @@ class Config:
             config.write(config_file)
 
 
-        self.charge = config['Molecule Specs']['charge']
-        self.spin = config['Molecule Specs']['spin']
-
+cgf = Config()
 
 if __name__ == '__main__':
     f = Config()
