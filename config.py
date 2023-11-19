@@ -46,6 +46,34 @@ class Config:
         return str(self.__class__) + '\n' + '\n'.join(
             ('{} = {}'.format(item, self.__dict__[item]) for item in self.__dict__))
 
+    def read_config(self):
+        config = configparser.ConfigParser()
+        config.read(self.config_path)
+        # all variables to read from file into config class
+        self.filename = config['Environment']['input file']
+        self.output = pathlib.Path(config['Environment']['output dir'])
+
+        # OPSIN Settings
+        self.opsin_format = config['OPSIN']['output format']
+        self.acid = config.getboolean('OPSIN', 'allow acid')
+        self.radicals = config.getboolean('OPSIN', 'allow radicals')
+        self.bad_stereo = config.getboolean('OPSIN', 'allow bad stereo')
+        self.wildcard_radicals = config.getboolean('OPSIN', 'wildcard radicals')
+
+        # Gaussian file header
+        self.cores = int(config['File']['cores'])
+        self.memory = int(config['File']['memory'])
+        self.checkpoint = config.getboolean('File', 'checkpoint')
+        # old checkpoint ?
+
+        # Gaussian route commands
+        self.theory = config['Route']['theory']
+        self.basis = config['Route']['basis set']
+        self.calc_type = config['Route']['calc type'].split(',')
+
+        self.charge = int(config['Molecule Specs']['charge'])
+        self.spin = int(config['Molecule Specs']['spin'])
+
     def make_config(self, config_path="./config.ini"):
         self.config_path = config_path
         config = configparser.ConfigParser()
@@ -80,27 +108,6 @@ class Config:
         with open(config_path, 'w') as config_file:
             config.write(config_file)
 
-    def read_config(self):
-        config = configparser.ConfigParser()
-        config.read(self.config_path)
-        # all variables to read from file into config class
-        self.filename = config['Environment']['input file']
-        self.output = config['Environment']['output dir']
-
-        self.opsin_format = config['OPSIN']['output format']
-        self.acid = config['OPSIN']['allow acid']
-        self.radicals = config['OPSIN']['allow radicals']
-        self.bad_stereo = config['OPSIN']['allow bad stereo']
-        self.wildcard_radicals = config['OPSIN']['wildcard radicals']
-
-        self.cores = config['File']['cores']
-        self.memory = config['File']['memory']
-        self.checkpoint = config['File']['checkpoint']
-        # old checkpoint ?
-
-        self.theory = config['Route']['theory']
-        self.basis = config['Route']['basis set']
-        self.calc_type = config['Route']['calc type']
 
         self.charge = config['Molecule Specs']['charge']
         self.spin = config['Molecule Specs']['spin']
