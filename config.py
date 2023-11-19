@@ -5,6 +5,26 @@ from main import verbose_print
 
 
 class Config:
+    config_path: str
+    filename: str
+    output: pathlib.Path
+
+    opsin_format: str
+    acid: bool
+    radicals: bool
+    bad_stereo: bool
+    wildcard_radicals: bool
+
+    cores: int
+    memory: int
+    checkpoint: bool
+    theory: str
+    basis: str
+    calc_type: list
+    charge: int
+    spin: int
+    modred: list
+
     def __init__(self, config_path: str = "./config.ini"):
         """
         Initialize config class with path of existing file, or if one does not exist
@@ -13,26 +33,6 @@ class Config:
         :param config_path:
         """
         self.config_path = config_path
-
-        self.filename = str
-        self.output = pathlib.Path
-
-        self.opsin_format = str
-        self.acid = bool
-        self.radicals = bool
-        self.bad_stereo = bool
-        self.wildcard_radicals = bool
-
-        self.cores = int
-        self.memory = int
-        self.checkpoint = bool
-        self.theory = str
-        self.basis = str
-        self.calc_type = list
-        self.charge = int
-        self.spin = int
-
-        self.modred = list
 
         if os.path.isfile(config_path):
             verbose_print("Config file found, loading settings...")
