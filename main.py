@@ -7,7 +7,7 @@ import sys
 
 def command_line():
     parser = argparse.ArgumentParser(
-        prog="DFT_GC-MS",
+        prog="GC-MS -> DFT",
         description="Program to convert an output of a GC-MS run into computational chemistry input files.")
 
     group = parser.add_mutually_exclusive_group()
@@ -88,13 +88,13 @@ def command_line():
 
 
 def log_settings(arguments):
-    logger_setting = logging.getLogger('pyDFT')
+    logger_setting = logging.getLogger('GCMSpyDFT')
     # Logging setup
-    logger_setup = logging.getLogger('pyDFT')
+    logger_setup = logging.getLogger('GCMSpyDFT')
     logger_setup.setLevel(logging.DEBUG)
 
     # create file handler which logs even debug messages
-    fh = logging.FileHandler('pyDFT.log', mode='w')
+    fh = logging.FileHandler('GCMSpyDFT.log', mode='w')
     fh.setLevel(level=logging.DEBUG)
     # create formatter and add it to the handlers
     fh_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -126,7 +126,7 @@ def log_settings(arguments):
 
 def configuration(arguments):
     from config import cgf
-    configuration_logger = logging.getLogger('pyDFT')
+    configuration_logger = logging.getLogger('GCMSpyDFT')
     # checks if configuration file exist
     if os.path.isfile(cgf.config_path):
         configuration_logger.info("Config file found, loading settings...")
@@ -138,10 +138,35 @@ def configuration(arguments):
         cgf.read_config()
 
 
+def settings(arguments):
+    from config import cgf
+    if args.output:
+        cgf.output = args.output
+    elif args.cores:
+        cgf.cores = args.cores
+    elif args.memory:
+        cgf.memory = args.memory
+    elif args.checkpoint:
+        cgf.memory = args.checkpoint
+    elif args.theory:
+        cgf.theory = args.theory
+    elif args.basis:
+        cgf.basis = args.basis
+    elif args.type:
+        cgf.calc_type = args.type
+    elif args.charge:
+        cgf.charge = args.charge
+    elif args.spin:
+        cgf.spin = args.spin
+    elif args.modred:
+        cgf.modred = args.modred
+
+
 if __name__ == '__main__':
     # run things
     args = command_line()
     log_settings(args)
-    logger = logging.getLogger('pyDFT')
+    logger = logging.getLogger('GCMSpyDFT')
     logger.debug("Starting configuration")
     configuration(args)
+    settings(args)
