@@ -1,9 +1,9 @@
+from typing import Literal
+
 from openbabel import openbabel, pybel
 from py2opsin import py2opsin as opsin
 
-import config
-
-config_file = config.Config()
+from config import cgf
 
 
 class Molecule:
@@ -24,7 +24,16 @@ class Molecule:
         if not self.cml:
             self.cml = self.name_to_format('CML')
 
-    def name_to_format(self, out_format: str = config_file.opsin_format) -> str | list:
+    def name_to_format(
+            self,
+            out_format: Literal[
+               "SMILES",
+               "ExtendedSMILES",
+               "CML",
+               "InChI",
+               "StdInChI",
+               "StdInChIKey",] = cgf.opsin_format
+            ) -> str | list:
         """
         Input simplifier for py2opsin.
 
@@ -36,10 +45,10 @@ class Molecule:
         return opsin(
             chemical_name=self.name,
             output_format=out_format,
-            allow_acid=config_file.acid,
-            allow_radicals=config_file.radicals,
-            allow_bad_stereo=config_file.bad_stereo,
-            wildcard_radicals=config_file.wildcard_radicals)
+            allow_acid=cgf.acid,
+            allow_radicals=cgf.radicals,
+            allow_bad_stereo=cgf.bad_stereo,
+            wildcard_radicals=cgf.wildcard_radicals)
 
     def create(self):
         if not self.cml:

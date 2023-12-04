@@ -69,7 +69,7 @@ def peak_agg(lines: list) -> list[list[str]]:  # TODO: Might switch to a recursi
 
 
 if __name__ == '__main__':
-    read_lines = read_to_list("hendon_fresh_1.txt")
+    read_lines = read_to_list("test/hendon_fresh_1.txt")
     trimmed_lines = trim_header(read_lines, content_finder(read_lines))
     # peak_blocks = peak_blocker(trimmed_lines)
     peak_blocks = peak_agg(trimmed_lines)
