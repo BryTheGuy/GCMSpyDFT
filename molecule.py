@@ -3,7 +3,7 @@ from typing import Literal
 from openbabel import openbabel, pybel
 from py2opsin import py2opsin as opsin
 
-from config import cgf
+from config import cfg
 
 
 class Molecule:
@@ -32,7 +32,7 @@ class Molecule:
                "CML",
                "InChI",
                "StdInChI",
-               "StdInChIKey",] = cgf.opsin_format
+               "StdInChIKey",] = cfg.opsin_format
             ) -> str | list:
         """
         Input simplifier for py2opsin.
@@ -45,10 +45,10 @@ class Molecule:
         return opsin(
             chemical_name=self.name,
             output_format=out_format,
-            allow_acid=cgf.acid,
-            allow_radicals=cgf.radicals,
-            allow_bad_stereo=cgf.bad_stereo,
-            wildcard_radicals=cgf.wildcard_radicals)
+            allow_acid=cfg.acid,
+            allow_radicals=cfg.radicals,
+            allow_bad_stereo=cfg.bad_stereo,
+            wildcard_radicals=cfg.wildcard_radicals)
 
     def create(self):
         if not self.cml:

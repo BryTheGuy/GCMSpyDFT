@@ -125,41 +125,41 @@ def log_settings(arguments):
 
 
 def configuration(arguments):
-    from config import cgf
+    from config import cfg
     configuration_logger = logging.getLogger('GCMSpyDFT')
     # checks if configuration file exist
-    if os.path.isfile(cgf.config_path):
+    if os.path.isfile(cfg.config_path):
         configuration_logger.info("Config file found, loading settings...")
-        cgf.read_config()
+        cfg.read_config()
     # if configuration file does not exist
     else:
         configuration_logger.info("Config file not found, writing settings...")
-        cgf.make_config(cgf.config_path)
-        cgf.read_config()
+        cfg.make_config(cfg.config_path)
+        cfg.read_config()
 
 
 def settings(arguments):
-    from config import cgf
+    from config import cfg
     if args.output:
-        cgf.output = args.output
+        cfg.output = args.output
     elif args.cores:
-        cgf.cores = args.cores
+        cfg.cores = args.cores
     elif args.memory:
-        cgf.memory = args.memory
+        cfg.memory = args.memory
     elif args.checkpoint:
-        cgf.memory = args.checkpoint
+        cfg.memory = args.checkpoint
     elif args.theory:
-        cgf.theory = args.theory
+        cfg.theory = args.theory
     elif args.basis:
-        cgf.basis = args.basis
+        cfg.basis = args.basis
     elif args.type:
-        cgf.calc_type = args.type
+        cfg.calc_type = args.type
     elif args.charge:
-        cgf.charge = args.charge
+        cfg.charge = args.charge
     elif args.spin:
-        cgf.spin = args.spin
+        cfg.spin = args.spin
     elif args.modred:
-        cgf.modred = args.modred
+        cfg.modred = args.modred
 
 
 if __name__ == '__main__':

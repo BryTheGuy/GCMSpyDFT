@@ -5,16 +5,23 @@ import logging
 
 
 class Config:
+    # Environment
     config_path: str
     filename: str
     output: pathlib.Path
 
+    # Internal settings
+    guess_line_start: int
+    guess_line_end: int
+
+    # OPSIN settings
     opsin_format: str
     acid: bool
     radicals: bool
     bad_stereo: bool
     wildcard_radicals: bool
 
+    # Gaussian settings
     cores: int
     memory: int
     checkpoint: bool
@@ -111,7 +118,7 @@ class Config:
             config.write(config_file)
 
 
-cgf = Config()
+cfg = Config()
 
 if __name__ == '__main__':
     f = Config()
