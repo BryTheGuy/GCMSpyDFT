@@ -11,8 +11,9 @@ class Config:
     output: pathlib.Path
 
     # Internal settings
-    guess_line_start: int
-    guess_line_end: int
+    mol_id_start = int()
+    mol_id_stop = 0
+    ref_num_start = 0
 
     # OPSIN settings
     opsin_format: str
