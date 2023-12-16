@@ -9,11 +9,16 @@ peak_logger = logging.getLogger('GCMSpyDFT.peak')
 
 
 class Peak:
-    def __init__(self, peak_block: list[str]):
+    def __init__(self, peak_list: list[str]):
+        """
+        Uses a list of lines that should represent a GC-MS peak to initialize the class.
+
+        :param peak_list: List of lines in the peak.
+        """
         self.logger = logging.getLogger('GCMSpyDFT.peak.Peak')
         self.logger.info('Creating new peak instance.')
 
-        self.peak_block = peak_block  # list of all lines in peak
+        self.peak_block = peak_list  # list of all lines in peak
         self.peak_num = None  # position of peak
         self.retention_time = None  # retention time of peak
         self.percent_area = None  # percent area of peak
@@ -24,13 +29,22 @@ class Peak:
         self.cas_num = []  # list of all CAS numbers in peak
         self.quality = []  # list of all qualities in peak
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """
+        The string representation of the class, excluding the values of peak_block and logger.
+
+        :return: string key and values of class attributes.
+        """
         return str(self.__class__) + '\n' + '\n'.join(
             f'{item} = {self.__dict__[item]}'
             if item not in ['peak_block', 'logger'] else item
             for item in self.__dict__)
 
-    def peak_header(self):
+    def peak_header(self) -> None:
+        """
+        Looks at first line of peak and parses 'PK#', 'RT', 'Area%', and 'Library' into
+        peak_num, retention_time, percent_area, and library class attributes.
+        """
         block = self.peak_block
         pn, rt, pa, lib = block[0].split()
         self.peak_num = int(pn)
@@ -38,7 +52,11 @@ class Peak:
         self.percent_area = float(pa)
         self.library = lib
 
-    def left_align(self):
+    def left_align(self) -> None:
+        """
+        Tries to strip leading whitespace for all lines until char position at the end of Area%.
+        This is to try and preserve spaces on lines with a space in molecule names appears at the start of the line.
+        """
         block = self.peak_block
         # could add logic for cfg.mol_id_start
         _pn, _rt, percent_area, _lib = block[0].split()
@@ -48,27 +66,46 @@ class Peak:
             # edit block in place
             block[i + 1] = line[line_indent:]
 
-    def add_separator(self, separator: str = ' @ '):
+    def add_separator(self, separator: str = ' @ ', id_stop: int = None, ref_start: int = None) -> None:
+        """
+        Will guess where to add a separator between molecule ids and tailing values on each reference line if no
+        configuration setting or id_stop and ref_start parameters are found.
+
+        Guessing is done by checking the first line for the index of a reference 3 digits long then updating the
+        index whenever a smaller reference number index is found.
+
+        :param id_stop: Length to cut molecule IDs to.
+        :param ref_start: Position of reference number and start of tailing values.
+        :param separator: The character used to distinguish between molecule IDs and tailing values.
+        """
         # copy block
         block = self.peak_block
+
+        # TODO: find better way to use params when present. Maybe overload?quality
+        if id_stop is not None and ref_start is None:
+            raise ValueError('Value for ref_start must be passed if a value for id_stop is passed')
+        elif ref_start is not None and id_stop is None:
+            raise ValueError('Value for id_stop must be passed if a value for ref_start is passed')
+        elif ref_start is not None and id_stop is not None:
+            cfg.ref_num_start, cfg.mol_id_stop = ref_start, id_stop
         # if column values are specified in config instance
         if cfg.ref_num_start and cfg.mol_id_stop:
             self.logger.info("Found config values.")
             # could add logic for cfg.mol_id_start
-            ref_num_start = cfg.ref_num_start
-            mol_id_stop = cfg.mol_id_stop
+            ref_start = cfg.ref_num_start
+            id_stop = cfg.mol_id_stop
 
             for i, line in enumerate(block[1:]):
-                if len(line) > mol_id_stop:
+                if len(line) > id_stop:
                     # strip in place
-                    block[i + 1] = line[:mol_id_stop] + separator + line[ref_num_start:]
+                    block[i + 1] = line[:id_stop] + separator + line[ref_start:]
                 else:
                     # extend in place
-                    block[i + 1] = line.ljust(mol_id_stop)
+                    block[i + 1] = line.ljust(id_stop)
         else:
             self.logger.info("Didn't find config values, using first line as guess.")
 
-            ref_num_start, mol_id_stop = 0, 0
+            ref_start, id_stop = 0, 0
 
             # looks for three digits in a row
             ref_index_start: Callable[[str], int] = lambda test_line: re.search(r"\d{3,}", test_line).start()
@@ -76,19 +113,25 @@ class Peak:
             id_index_stop: Callable[[str], int] = lambda test_line: re.search(r"\s*$", test_line).start()
 
             for i, line in enumerate(block[1:]):
-                if len(line) > ref_num_start:
-                    ref_num_start = ref_index_start(line)
-                    mol_id_stop = id_index_stop(line[:ref_num_start])
+                if len(line) > ref_start:
+                    ref_start = ref_index_start(line)
+                    id_stop = id_index_stop(line[:ref_start])
                     # strip in place
-                    block[i + 1] = line[:mol_id_stop] + separator + line[ref_num_start:]
+                    block[i + 1] = line[:id_stop] + separator + line[ref_start:]
 
-                elif mol_id_stop > len(line):
+                elif id_stop > len(line):
                     # extend in place
-                    block[i + 1] = line.ljust(mol_id_stop)
+                    block[i + 1] = line.ljust(id_stop)
 
-            cfg.ref_num_start, cfg.mol_id_stop = ref_num_start, mol_id_stop
+            cfg.ref_num_start, cfg.mol_id_stop = ref_start, id_stop  # I don't think I need this here
 
-    def combine_lines(self, seperator: str = ' @ '):
+    def combine_lines(self, seperator: str = ' @ ') -> None:
+        """
+        Combines all proposed molecule IDs for each guess in the peak list into a single string and append tailing
+        values.
+
+        :param seperator: Character used to determine the start of each guess and what to append as tail.
+        """
         lines = self.peak_block
         indices = []
 
@@ -108,13 +151,30 @@ class Peak:
 
         self.possible_IDs = len(lines)
 
-    def trailing_values(self, line: str, seperator: str = ' @ '):
+    def trailing_values(self, line: str, seperator: str = ' @ ') -> None:
+        """
+        Looks for values after seperator and parse 'Ref#', 'CAS#', 'Qual' into reference_num, cas_num, and quality.
+
+        :param line: String to scrape of tailing values.
+        :param seperator: The charactor used to denote tailing values.
+        """
         ref, cas, qual = line[line.find(seperator) + len(seperator):].split()
         self.reference_num.append(int(ref))
         self.cas_num.append(int(cas.replace('-', '')))
         self.quality.append(int(qual))
 
-    def parse_lines(self, keyword: str = "(CAS)", delimiter: str = "$$", seperator: str = '@'):
+    def parse_lines(self, keyword: str = "(CAS)", delimiter: str = "$$", seperator: str = '@') -> None:
+        """
+        Uses peak list along with the keyword, delimiter, and seperator to determine the molecule ID for each guess
+        in the peak. duplicates are not considered.
+
+        Molecule IDs immediately before the keyword are prioritized. If there is no keyword the first molecule ID
+        before a delimiter is used, else the entire string before the seperator is used.
+
+        :param keyword: String used to denote the best potential molecule ID.
+        :param delimiter: String used to denote different molecule IDs.
+        :param seperator: Charactor used to denote the end of all molecule IDs.
+        """
         lines = self.peak_block
 
         for line in lines:
@@ -168,7 +228,7 @@ if __name__ == '__main__':
                   '                 ISO BUTYRALDEHYDE                    1475 000078-84-2 72',
                   '                 11-Oxatricyclo(5.4.1.0)dodecan-9-o  64703 073274-37-0 37',
                   '                 ne']
-    p = Peak(peak_block=test_block)
+    p = Peak(peak_list=test_block)
     p.peak_header()
     p.left_align()
     p.add_separator()
