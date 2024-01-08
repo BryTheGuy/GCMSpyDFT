@@ -1,20 +1,28 @@
 import configparser
 import os.path
 import pathlib
-from main import verbose_print
+import logging
 
 
 class Config:
+    # Environment
     config_path: str
     filename: str
     output: pathlib.Path
 
+    # Internal settings
+    mol_id_start = int()
+    mol_id_stop = 0
+    ref_num_start = 0
+
+    # OPSIN settings
     opsin_format: str
     acid: bool
     radicals: bool
     bad_stereo: bool
     wildcard_radicals: bool
 
+    # Gaussian settings
     cores: int
     memory: int
     checkpoint: bool
@@ -32,13 +40,15 @@ class Config:
 
         :param config_path:
         """
+        config_logger = logging.getLogger('GCMSpyDFT.config')
+
         self.config_path = config_path
 
         if os.path.isfile(config_path):
-            verbose_print("Config file found, loading settings...")
+            config_logger.info("Config file found, loading settings...")
             self.read_config()
         else:
-            verbose_print("Config file not found, writing settings...")
+            config_logger.info("Config file not found, writing settings...")
             self.make_config(config_path)
             self.read_config()
 
@@ -109,7 +119,7 @@ class Config:
             config.write(config_file)
 
 
-cgf = Config()
+cfg = Config()
 
 if __name__ == '__main__':
     f = Config()
