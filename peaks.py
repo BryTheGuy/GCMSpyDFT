@@ -9,25 +9,25 @@ peak_logger = logging.getLogger('GCMSpyDFT.peak')
 
 
 class Peak:
-    def __init__(self, peak_list: list[str]):
+    def __init__(self, peak_lines: list[str]):
         """
         Uses a list of lines that should represent a GC-MS peak to initialize the class.
 
-        :param peak_list: List of lines in the peak.
+        :param peak_lines: List of lines in the peak.
         """
         self.logger = logging.getLogger('GCMSpyDFT.peak.Peak')
         self.logger.info('Creating new peak instance.')
 
-        self.peak_block = peak_list  # list of all lines in peak
-        self.peak_num = None  # position of peak
-        self.retention_time = None  # retention time of peak
-        self.percent_area = None  # percent area of peak
-        self.library = None  # Library used for peak
-        self.possible_IDs = None  # total number of guess made in peak
-        self.ID = []  # list of unique proposed molecule names in peak
-        self.reference_num = []  # list of all reference numbers in peak
-        self.cas_num = []  # list of all CAS numbers in peak
-        self.quality = []  # list of all qualities in peak
+        self.peak_block = peak_lines         # list of all lines in peak
+        self.peak_num: int = 0              # position of peak
+        self.retention_time: float = 0.0    # retention time of peak
+        self.percent_area: float = 0.0      # percent area of peak
+        self.library: str = ''              # Library used for peak
+        self.possible_IDs: int = 0          # total number of guess made in peak
+        self.ID: list[str] = []             # list of unique proposed molecule names in peak
+        self.reference_nums: list[int] = []  # list of all reference numbers in peak
+        self.cas_nums: list[int] = []        # list of all CAS numbers in peak
+        self.qualities: list[int] = []        # list of all qualities in peak
 
     def __str__(self) -> str:
         """
@@ -159,9 +159,9 @@ class Peak:
         :param seperator: The charactor used to denote tailing values.
         """
         ref, cas, qual = line[line.find(seperator) + len(seperator):].split()
-        self.reference_num.append(int(ref))
-        self.cas_num.append(int(cas.replace('-', '')))
-        self.quality.append(int(qual))
+        self.reference_nums.append(int(ref))
+        self.cas_nums.append(int(cas.replace('-', '')))
+        self.qualities.append(int(qual))
 
     def parse_lines(self, keyword: str = "(CAS)", delimiter: str = "$$", seperator: str = '@') -> None:
         """
@@ -228,7 +228,7 @@ if __name__ == '__main__':
                   '                 ISO BUTYRALDEHYDE                    1475 000078-84-2 72',
                   '                 11-Oxatricyclo(5.4.1.0)dodecan-9-o  64703 073274-37-0 37',
                   '                 ne']
-    p = Peak(peak_list=test_block)
+    p = Peak(peak_lines=test_block)
     p.peak_header()
     p.left_align()
     p.add_separator()
