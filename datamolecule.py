@@ -14,7 +14,7 @@ def make_structure(names: str | list,
                        "CML",
                        "InChI",
                        "StdInChI",
-                       "StdInChIKey"] = cfg.opsin_format | 'CML'
+                       "StdInChIKey"] = cfg.opsin_format or 'CML'
                    ) -> str | list:
     """
     Input simplifier for py2opsin.
@@ -34,19 +34,24 @@ def make_structure(names: str | list,
         wildcard_radicals=cfg.wildcard_radicals)
 
 
-class Molecule(pybel.Molecule):
-    def __init__(self, name: str, structure: str = None,
-                 reference_num: int = None, cas_num: int = None, quality: int = None):
+class DataMolecule(pybel.Molecule):
+    def __init__(self, name: str, OBMol: openbabel.OBMol = None, structure: str = None, reference_num: int = None,
+                 cas_num: int = None, quality: int = None):
         self.logger = logging.getLogger('GCMSpyDFT.molecule.Molecule')
         self.logger.info(f'Creating new {name} molecule instance.')
 
         self.name = name
         self.name_no_space = self.name.strip().replace(' ', '_')
         self.structure: str = structure
-        self.mol = None
+        self.mol = pybel.readstring('cml', make_structure(self.name, 'CML'))
         self.reference_num: int = reference_num  # reference number of molecule
         self.cas_num: int = cas_num  # CAS numbers of molecule
         self.quality: int = quality  # quality of molecule
+
+        if OBMol is not None:
+            super().__init__(OBMol)
+        else:
+            super().__init__(self.mol)
 
     def name_strip(self):
         self.name_no_space = self.name.strip().replace(' ', '_')
