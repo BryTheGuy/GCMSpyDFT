@@ -3,8 +3,9 @@ import logging
 import os
 import pathlib
 import sys
+from io import TextIOWrapper
 
-from molecule import make_structure, Molecule
+from datamolecule import make_structure, DataMolecule
 
 
 def command_line():
@@ -30,7 +31,7 @@ def command_line():
                         default=sys.stdin,
                         help="Input file name.")
 
-    parser.add_argument('-v',
+    parser.add_argument('-V',
                         '--version',
                         action='version',
                         version='%(prog)s v0.1')
@@ -79,8 +80,7 @@ def command_line():
                         type=int,
                         help="Multiplicity spin to assign each molecule. Overrides predicted spin.")
 
-    parser.add_argument('-M',
-                        '--modred',
+    parser.add_argument('--modred',
                         type=str,
                         nargs='*',
                         help="Modify redundant internal coordinate definitions to be include at "
@@ -164,7 +164,7 @@ def settings(arguments):
         cfg.modred = args.modred
 
 
-def read_input_file(file: str) -> list[list[str]]:
+def read_input_file(file: TextIOWrapper) -> list[list[str]]:
     file_reader_logger = logging.getLogger('GCMSpyDFT')
 
     import gcms_interpreter as gi
@@ -186,7 +186,6 @@ def parse_peaks(peak_lines: list[list[str]]) -> list[object]:
 
     list_of_peaks: list[object] = []
     for lines in peak_lines:
-
         current_peak = Peak(lines)
         current_peak.peak_header()
         current_peak.left_align()
@@ -199,18 +198,18 @@ def parse_peaks(peak_lines: list[list[str]]) -> list[object]:
     return list_of_peaks
 
 
-def create_molecules(names: list[str], structures: list[str]) -> list[Molecule]:
+def create_molecules(names: list[str], structures: list[str]) -> list[DataMolecule]:
     # TODO: added charge and spin maybe?
-    from molecule import Molecule
+    from datamolecule import DataMolecule
 
-    molecule_list: list[Molecule] = []
+    molecule_list: list[DataMolecule] = []
 
     for name, structure in zip(names, structures):
-        current_mol = Molecule(name, structure)
-        current_mol.addh()
-        current_mol.make2D()
-        current_mol.make3D()
-        current_mol.OBMol.Center()
+        current_mol = DataMolecule(name, structure)
+        current_mol.mol.addh()
+        current_mol.mol.make2D()
+        current_mol.mol.make3D()
+        current_mol.mol.OBMol.Center()
 
         molecule_list.append(current_mol)
 
@@ -226,30 +225,41 @@ def run():
     for peak in peak_list:
         mol_names: list = getattr(peak, 'ID')
         mol_structures = make_structure(mol_names)  # expect CML structure
-        peak_molecules: list[Molecule] = create_molecules(mol_names, mol_structures)
+        peak_molecules: list[DataMolecule] = create_molecules(mol_names, mol_structures)
         for i, peak_molecule in enumerate(peak_molecules):
+            folder_path = (f'{cfg.output}/'
+                           f'{getattr(peak, "peak_num")}'
+                           f'-{getattr(peak, "retention_time")}'
+                           f'-{getattr(peak, "percent_area")}/'
+                           f'{getattr(peak, "reference_nums")[i]}'
+                           f'-{getattr(peak, "cas_nums")[i]}'
+                           f'-{getattr(peak, "qualities")[i]}/')
+
+            if not os.path.isdir(folder_path):
+                os.makedirs(folder_path)
 
             # output/PK#-RT-area%/ref-cas-qual/name.gau
             file_path = (f'{cfg.output}/'
-                         f'{getattr(peak_molecule, "peak_num")}'
-                         f'-{getattr(peak_molecule, "retention_time")}'
-                         f'-{getattr(peak_molecule, "percent_area")}/'
-                         f'{getattr(peak_molecule, "reference_num")[i]}'
-                         f'-{getattr(peak_molecule, "cas_num")[i]}'
-                         f'-{getattr(peak_molecule, "quality")[i]}/'
-                         f'{getattr(peak_molecule, "name_no_space")}')
+                         f'{getattr(peak, "peak_num")}'
+                         f'-{getattr(peak, "retention_time")}'
+                         f'-{getattr(peak, "percent_area")}/'
+                         f'{getattr(peak, "reference_nums")[i]}'
+                         f'-{getattr(peak, "cas_nums")[i]}'
+                         f'-{getattr(peak, "qualities")[i]}/'
+                         f'{getattr(peak_molecule, "name_no_space")}'
+                         f'.inp')
 
             # %cores=1 \n %mem=50 \n %check=name_[calc_type]
             header = (f'%NProcShared={cfg.cores}\n'
                       f'%mem={cfg.memory}\n'
-                      f'%chk={getattr(peak_molecule, "name")}_{cfg.calc_type}.chk\n')
+                      f'%chk={getattr(peak_molecule, "name")}_{",".join(cfg.calc_type).lower()}.chk\n')
 
             # #p theory/basis calc_type
-            keywords = f'#p {cfg.theory}/{cfg.basis} {[calc for calc in cfg.calc_type]}'
+            keywords = f'\n#p {cfg.theory}/{cfg.basis} ({",".join(cfg.calc_type)})'
 
-            peak_molecule.title = peak_molecule.name + ' ' + cfg.calc_type + ' GCMSpyDFT'
+            peak_molecule.mol.title = peak_molecule.name + ' ' + '/'.join(cfg.calc_type).strip() + ' GCMSpyDFT'
 
-            peak_molecule.write(format='gau', filename=file_path, opt=header+keywords)
+            peak_molecule.mol.write(format='gau', filename=file_path, opt={'k': header + keywords}, overwrite=True)
 
 
 if __name__ == '__main__':
@@ -261,5 +271,5 @@ if __name__ == '__main__':
     configuration(args)
     logger.debug("Starting settings")
     settings(args)
-    logger.debug("Starting runself.reference_nums: list[int] = []  # list of all reference numbers in peak")
+    logger.debug("Starting run")
     run()

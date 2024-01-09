@@ -1,11 +1,13 @@
+from io import TextIOWrapper
 from pprint import pprint
 
 
-def read_to_list(input_file: str) -> list:
+def read_to_list(input_file: TextIOWrapper) -> list:
     """  Reads a file to a list and returns the list.  """
-    lines: list
-    with open(input_file) as f:
-        lines = f.read().splitlines()
+    # lines: list
+    # with open(input_file) as f:
+    #     lines = f.read().splitlines()
+    lines = input_file.read().splitlines()
     return lines
 
 
@@ -69,7 +71,7 @@ def peak_agg(lines: list) -> list[list[str]]:  # TODO: Might switch to a recursi
 
 
 if __name__ == '__main__':
-    read_lines = read_to_list("test/hendon_fresh_1.txt")
+    read_lines = read_to_list("test/test_file.txt")
     trimmed_lines = trim_header(read_lines, content_finder(read_lines))
     # peak_blocks = peak_blocker(trimmed_lines)
     peak_blocks = peak_agg(trimmed_lines)
