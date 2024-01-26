@@ -167,7 +167,7 @@ def settings(arguments):
 def read_input_file(file: TextIOWrapper) -> list[list[str]]:
     file_reader_logger = logging.getLogger('GCMSpyDFT')
 
-    import gcms_interpreter as gi
+    import interpreter as gi
     lines = gi.read_to_list(file)
 
     if header_line := gi.content_finder(lines) != -1:
