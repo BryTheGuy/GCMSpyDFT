@@ -6,6 +6,8 @@ from py2opsin import py2opsin as opsin
 
 from config import cfg
 
+data_logger = logging.getLogger('GCMSpyDFT.datamolecule')
+
 
 def make_structure(names: str | list,
                    out_format: Literal[
@@ -48,9 +50,17 @@ class DataMolecule(pybel.Molecule):
         self.cas_num: int = cas_num  # CAS numbers of molecule
         self.quality: int = quality  # quality of molecule
 
+        # For the love of all that is good I cannot understand this, but it seems to work
+        # FIXME: This needs a cleaning
         if OBMol is not None:
+            self.logger.debug(f'Openbabel object provided for {name}')
             super().__init__(OBMol)
         else:
+            self.logger.debug(f'Generating molecule object for {name}')
+            try:
+                structure = make_structure(self.name, 'CML')
+            except Warning:
+                self.logger.error(f'Molecule {self.reference_num} failed to from a structure')
             super().__init__(self.mol)
 
     def name_strip(self):

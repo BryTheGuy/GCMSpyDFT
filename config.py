@@ -33,6 +33,18 @@ class Config:
     spin: int
     modred: list
 
+    # Colors
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+    SUNDERLINE = '\033[24m'
+
     def __init__(self, config_path: str = "./config.ini"):
         """
         Initialize config class with path of existing file, or if one does not exist

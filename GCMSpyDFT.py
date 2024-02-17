@@ -3,6 +3,7 @@ import logging
 import os
 import pathlib
 import sys
+import warnings
 from io import TextIOWrapper
 
 from datamolecule import make_structure, DataMolecule
@@ -216,15 +217,36 @@ def create_molecules(names: list[str], structures: list[str]) -> list[DataMolecu
     return molecule_list
 
 
-def run():
+def run() -> list[str]:
     from config import cfg
     peak_blocks: list[list[str]] = read_input_file(args.infile)  # collection of lines organized by peak
 
     peak_list: list[object] = parse_peaks(peak_blocks)  # collection of peak objects
+    failed_names: list[str] = []
 
     for peak in peak_list:
         mol_names: list = getattr(peak, 'ID')
-        mol_structures = make_structure(mol_names)  # expect CML structure
+
+        mol_structures: list[str] = []
+        success_names: list[str] = []
+        data_molecule: list = []  # FIXME: rename
+
+        warnings.simplefilter('error')
+        for i, mol_name in enumerate(mol_names):
+            try:
+                structure = make_structure(mol_name)
+                mol_structures.append(structure)
+                success_names.append(mol_name)
+                logger.info(f'{cfg.OKCYAN}Success! {mol_name} is now a structure!{cfg.ENDC}')
+                # print(structure)
+                data_molecule.append((mol_name, structure, i))
+            except Warning as w:
+                failed_names.append(mol_name)
+                logger.warning(f'{cfg.FAIL}FAIL! {cfg.UNDERLINE}{mol_name}{cfg.SUNDERLINE} threw an error!\n'
+                               f'{cfg.WARNING}{str(w).strip()}{cfg.ENDC}')
+        warnings.resetwarnings()
+
+        # mol_structures = make_structure(mol_names)
         peak_molecules: list[DataMolecule] = create_molecules(mol_names, mol_structures)
         for i, peak_molecule in enumerate(peak_molecules):
             folder_path = (f'{cfg.output}/'
@@ -260,6 +282,7 @@ def run():
             peak_molecule.mol.title = peak_molecule.name + ' ' + '/'.join(cfg.calc_type).strip() + ' GCMSpyDFT'
 
             peak_molecule.mol.write(format='gau', filename=file_path, opt={'k': header + keywords}, overwrite=True)
+    return failed_names
 
 
 if __name__ == '__main__':
@@ -267,9 +290,10 @@ if __name__ == '__main__':
     args = command_line()
     log_settings(args)
     logger = logging.getLogger('GCMSpyDFT')
-    logger.debug("Starting configuration")
+    logger.info("Starting configuration")
     configuration(args)
-    logger.debug("Starting settings")
+    logger.info("Starting settings")
     settings(args)
-    logger.debug("Starting run")
-    run()
+    logger.info("Starting run")
+    if failed := run():
+        logger.error('List of molecules that failed to form structures.\n{0}'.format((name + '\n' for name in failed)))

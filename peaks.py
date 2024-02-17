@@ -16,7 +16,7 @@ class Peak:
         :param peak_lines: List of lines in the peak.
         """
         self.logger = logging.getLogger('GCMSpyDFT.peak.Peak')
-        self.logger.info('Creating new peak instance.')
+        # self.logger.debug('Creating new peak instance.')
 
         self.peak_block = peak_lines         # list of all lines in peak
         self.peak_num: int = 0              # position of peak
@@ -90,7 +90,7 @@ class Peak:
             cfg.ref_num_start, cfg.mol_id_stop = ref_start, id_stop
         # if column values are specified in config instance
         if cfg.ref_num_start and cfg.mol_id_stop:
-            self.logger.info("Found config values.")
+            self.logger.debug("Found config values.")
             # could add logic for cfg.mol_id_start
             ref_start = cfg.ref_num_start
             id_stop = cfg.mol_id_stop
@@ -195,6 +195,7 @@ class Peak:
 
                 candidate = candidate.lower().strip()
                 if candidate not in self.ID:
+                    self.logger.info(f'Found molecule: {candidate}')
                     self.ID.append(candidate)
                     self.trailing_values(line)
         # del self.peak_block
