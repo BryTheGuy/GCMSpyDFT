@@ -27,9 +27,9 @@ def command_line():
                        help="silence output")
 
     parser.add_argument('infile',
-                        nargs='?',
+                        # nargs='?',
                         type=argparse.FileType('r'),
-                        default=sys.stdin,
+                        # default=sys.stdin,
                         help="Input file name.")
 
     parser.add_argument('-V',
@@ -219,6 +219,8 @@ def create_molecules(names: list[str], structures: list[str]) -> list[DataMolecu
 
 def run() -> list[str]:
     from config import cfg
+    warnings.simplefilter('error')
+
     peak_blocks: list[list[str]] = read_input_file(args.infile)  # collection of lines organized by peak
 
     peak_list: list[object] = parse_peaks(peak_blocks)  # collection of peak objects
@@ -231,23 +233,22 @@ def run() -> list[str]:
         success_names: list[str] = []
         data_molecule: list = []  # FIXME: rename
 
-        warnings.simplefilter('error')
         for i, mol_name in enumerate(mol_names):
             try:
                 structure = make_structure(mol_name)
                 mol_structures.append(structure)
                 success_names.append(mol_name)
-                logger.info(f'{cfg.OKCYAN}Success! {mol_name} is now a structure!{cfg.ENDC}')
+                logger.info(f'{cfg.OKCYAN} Success! {mol_name} is now a structure! {cfg.ENDC}')
                 # print(structure)
                 data_molecule.append((mol_name, structure, i))
             except Warning as w:
                 failed_names.append(mol_name)
-                logger.warning(f'{cfg.FAIL}FAIL! {cfg.UNDERLINE}{mol_name}{cfg.SUNDERLINE} threw an error!\n'
-                               f'{cfg.WARNING}{str(w).strip()}{cfg.ENDC}')
-        warnings.resetwarnings()
+                logger.warning(f'{cfg.FAIL} FAIL! {cfg.UNDERLINE}{mol_name}{cfg.SUNDERLINE} threw an error!\n'
+                               f'{cfg.WARNING} {str(w).strip()} {cfg.ENDC}')
 
         # mol_structures = make_structure(mol_names)
-        peak_molecules: list[DataMolecule] = create_molecules(mol_names, mol_structures)
+        peak_molecules: list[DataMolecule] = create_molecules(success_names, mol_structures)
+        # peak_molecules: list[DataMolecule] = create_molecules(*data_molecule)
         for i, peak_molecule in enumerate(peak_molecules):
             folder_path = (f'{cfg.output}/'
                            f'{getattr(peak, "peak_num")}'
@@ -282,6 +283,8 @@ def run() -> list[str]:
             peak_molecule.mol.title = peak_molecule.name + ' ' + '/'.join(cfg.calc_type).strip() + ' GCMSpyDFT'
 
             peak_molecule.mol.write(format='gau', filename=file_path, opt={'k': header + keywords}, overwrite=True)
+
+    warnings.resetwarnings()
     return failed_names
 
 
@@ -296,4 +299,5 @@ if __name__ == '__main__':
     settings(args)
     logger.info("Starting run")
     if failed := run():
-        logger.error('List of molecules that failed to form structures.\n{0}'.format((name + '\n' for name in failed)))
+        logger.error(f'List of molecules that failed to form structures. {failed}')
+

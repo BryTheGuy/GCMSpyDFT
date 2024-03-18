@@ -8,6 +8,7 @@ def read_to_list(input_file: TextIOWrapper) -> list:
     # with open(input_file) as f:
     #     lines = f.read().splitlines()
     lines = input_file.read().splitlines()
+    input_file.close()
     return lines
 
 
